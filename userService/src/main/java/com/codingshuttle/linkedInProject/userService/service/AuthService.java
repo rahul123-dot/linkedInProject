@@ -4,6 +4,7 @@ import com.codingshuttle.linkedInProject.userService.dto.LoginRequestDto;
 import com.codingshuttle.linkedInProject.userService.dto.SignupRequestDto;
 import com.codingshuttle.linkedInProject.userService.dto.UserDto;
 import com.codingshuttle.linkedInProject.userService.entity.User;
+import com.codingshuttle.linkedInProject.userService.event.UserCreated;
 import com.codingshuttle.linkedInProject.userService.exception.BadRequestException;
 import com.codingshuttle.linkedInProject.userService.exception.ResourceNotFoundException;
 import com.codingshuttle.linkedInProject.userService.repository.UserRepository;
@@ -11,6 +12,7 @@ import com.codingshuttle.linkedInProject.userService.utils.BCrypt;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -21,6 +23,7 @@ public class AuthService {
     private final UserRepository userRepository;
     private final ModelMapper modelMapper;
     private final JwtService jwtService;
+    private final KafkaTemplate<Long,UserCreated> userCreatedKafkaTopic;
 
     public UserDto signUp(SignupRequestDto signupRequestDto) {
         log.info("Signup a user with email: {}", signupRequestDto.getEmail());
@@ -34,6 +37,13 @@ public class AuthService {
         user.setPassword(BCrypt.hash(signupRequestDto.getPassword()));
 
         user = userRepository.save(user);
+
+        UserCreated userCreated = UserCreated.builder()
+                .userId(user.getId())
+                .name(user.getName())
+                .build();
+        userCreatedKafkaTopic.send("User_Created_Topic",userCreated);
+
         return modelMapper.map(user, UserDto.class);
     }
 

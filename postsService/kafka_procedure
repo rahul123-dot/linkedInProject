@@ -1,0 +1,7 @@
+add dependency in kafka
+config(package)->KafkaConfig(class):has a topics
+event(package)->PostCreated(class):postid,owneruserid , userid, content littel bit.
+                PostLiked(class):postid,ownerid,likedbyuserid;
+service(package)-> postcreate(class):kafkatemplate<Long,PostCreated>
+                                     :createpost -> get connection then send notification that post is created
+                   postlike(class):kafkatemplate<Long,PostLiked>

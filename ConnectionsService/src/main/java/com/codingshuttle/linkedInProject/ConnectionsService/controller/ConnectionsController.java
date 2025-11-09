@@ -5,10 +5,7 @@ import com.codingshuttle.linkedInProject.ConnectionsService.service.ConnectionsS
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -20,10 +17,28 @@ public class ConnectionsController {
 
     private final ConnectionsService connectionsService;
 
-    @PostMapping("/{userId}/first-degree")
+    @GetMapping("/{userId}/first-degree")
     ResponseEntity<List<Person>> getFirstDegreeConnectionsOfUser(@PathVariable Long userId){
-
         List<Person> personList = connectionsService.getFirstDegreeConnectionOfUser(userId);
         return ResponseEntity.ok(personList);
     }
+
+    @PostMapping("/request/{userId}")
+    ResponseEntity<Void> sendConnectionRequest(@PathVariable Long userId){
+        connectionsService.SendConnectionRequest(userId);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/accept/{userId}")
+    ResponseEntity<Void> acceptConnectionRequest(@PathVariable Long userId){
+        connectionsService.acceptConnectionRequest(userId);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/reject/{userId}")
+    ResponseEntity<Void> rejectConnectionRequest(@PathVariable Long userId){
+        connectionsService.rejectConnectionRequest(userId);
+        return ResponseEntity.noContent().build();
+    }
+
 }
